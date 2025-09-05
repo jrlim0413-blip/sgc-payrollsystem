@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QR Attendance Scanner</title>
+<style>
+    body {
+        margin: 0;
+        font-family: "Segoe UI", sans-serif;
+        background: linear-gradient(135deg, #0f172a, #1e3a8a);
+        color: white;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .container {
+        background: rgba(255,255,255,0.05);
+        border-radius: 16px;
+        padding: 40px 30px;
+        width: 400px;
+        text-align: center;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        backdrop-filter: blur(6px);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 300px;
+    }
+
+    .logo {
+        width: 200px;
+        height: 200px;
+        background-color: white;
+        border-radius: 12px;
+        padding: 8px;
+        object-fit: contain;
+        margin-bottom: 15px;
+    }
+    h1 {
+        font-size: 1.5em;
+        margin-bottom: 20px;
+        font-weight: 500;
+    }
+    .datetime {
+        font-size: 0.9em;
+        margin-bottom: 15px;
+        color: #a5b4fc;
+    }
+    input {
+        padding: 12px;
+        width: 100%;
+        border-radius: 8px;
+        border: none;
+        font-size: 1em;
+        margin-bottom: 15px;
+        text-align: center;
+        outline: none;
+    }
+    .success {
+        font-size: 0.9em;
+        min-height: 20px; 
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        visibility: hidden;
+        transition: all 0.3s ease;
+    }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <img src="https://i.imgur.com/6SF5KQG.png" class="logo" alt="Logo">
+    <h1>QR Attendance Scanner</h1>
+    <div class="datetime" id="datetime">--:-- --</div>
+
+    <input type="text" id="qrInput" placeholder="Scan QR Code here..." autofocus>
+
+    <div class="success" id="successMsg"></div>
+</div>
+
+<script>
+    // Real-time clock
+    function updateDateTime() {
+        const now = new Date();
+        const dateStr = now.toLocaleDateString();
+        const timeStr = now.toLocaleTimeString();
+        document.getElementById("datetime").innerText = `${dateStr} ${timeStr}`;
+    }
+    setInterval(updateDateTime, 1000);
+    updateDateTime();
+
+    const qrInput = document.getElementById("qrInput");
+    const successMsg = document.getElementById("successMsg");
+
+    qrInput.focus(); 
+
+    // Disable paste and manual typing
+    qrInput.addEventListener("paste", e => e.preventDefault());
+    
+    let scanTimer;
+    qrInput.addEventListener("input", function () {
+        clearTimeout(scanTimer);
+
+        if (qrInput.value.trim() !== "") {
+            scanTimer = setTimeout(() => {
+                const scannedValue = qrInput.value.trim();
+
+                // Disable input while waiting for server feedback
+                qrInput.value = "";
+                qrInput.disabled = true;
+
+                // Try parsing QR code JSON
+                let data;
+                try {
+                    const parsed = JSON.parse(scannedValue);
+                    data = {
+                        id: parsed.ID || parsed.id,
+                        name: parsed.NAME || parsed.name,
+                        area: parsed.AREA || parsed.area
+                    };
+                } catch (err) {
+                    successMsg.textContent = "❌ Invalid QR format";
+                    successMsg.style.color = "#f87171";
+                    successMsg.style.visibility = "visible";
+
+                    setTimeout(() => {
+                        successMsg.style.visibility = "hidden";
+                        qrInput.disabled = false;
+                        qrInput.focus();
+                    }, 2000);
+                    return;
+                }
+
+                // Send parsed data to Google Apps Script
+                fetch("https://script.google.com/macros/s/AKfycbzxIw4N1eMDOvvyX_NqgBxW1NrzwSo-bvz6xn9Fw2nhmZPiXreP0RfZU9HsTK0Ezk0SlQ/exec", {
+                    method: "POST",
+                    body: new URLSearchParams({
+                        id: data.id,
+                        name: data.name,
+                        area: data.area
+                    })
+                })
+                .then(res => res.text())
+                .then(response => {
+                    console.log("Server Response:", response);
+
+                    successMsg.textContent = response;
+                    successMsg.style.visibility = "visible";
+
+                    // Color code feedback
+                    if (response.includes("✅")) {
+                        successMsg.style.color = "#4ade80"; // green
+                    } else if (response.includes("⚠")) {
+                        successMsg.style.color = "#facc15"; // yellow
+                    } else {
+                        successMsg.style.color = "#f87171"; // red
+                    }
+
+                    // Re-enable input after 2 seconds
+                    setTimeout(() => {
+                        successMsg.style.visibility = "hidden";
+                        qrInput.disabled = false;
+                        qrInput.focus();
+                    }, 2000);
+                })
+                .catch(err => {
+                    console.error("Error:", err);
+                    successMsg.textContent = "❌ Network or server error";
+                    successMsg.style.color = "#f87171";
+                    successMsg.style.visibility = "visible";
+
+                    setTimeout(() => {
+                        successMsg.style.visibility = "hidden";
+                        qrInput.disabled = false;
+                        qrInput.focus();
+                    }, 2000);
+                });
+            }, 300);
+        }
+    });
+</script>
+
+</body>
+</html>
