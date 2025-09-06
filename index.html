@@ -3,186 +3,327 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>QR Attendance Scanner</title>
+<title>SGC ATTENDANCE</title>
+<link rel="icon" type="image/png" href="https://i.imgur.com/6SF5KQG.png">
 <style>
-    body {
-        margin: 0;
-        font-family: "Segoe UI", sans-serif;
-        background: linear-gradient(135deg, #0f172a, #1e3a8a);
-        color: white;
-        height: 100vh;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
+/* --- General Body & Container --- */
+body {
+    margin:0;
+    font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background:linear-gradient(135deg,#0f172a,#1e3a8a);
+    color:white;
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+.container {
+    background: rgba(255,255,255,0.05);
+    border-radius:16px;
+    padding:30px 25px;
+    width:380px;
+    text-align:center;
+    box-shadow:0 8px 32px rgba(0,0,0,0.3);
+    backdrop-filter:blur(6px);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    min-height:320px;
+    z-index:1;
+}
+.logo {
+    width:180px;
+    height:180px;
+    background-color:white;
+    border-radius:12px;
+    padding:6px;
+    object-fit:contain;
+    margin-bottom:12px;
+}
+h1 {
+    font-size:1.4em;
+    margin-bottom:6px;
+    font-weight:400;
+}
+.subtitle {
+    font-size:0.95em;
+    margin-bottom:12px;
+    color:#c7d2fe;
+}
+.datetime {
+    font-size:0.85em;
+    margin-bottom:12px;
+    color:#a5b4fc;
+}
+input {
+    padding:10px;
+    width:100%;
+    border-radius:6px;
+    border:none;
+    font-size:0.95em;
+    margin-bottom:12px;
+    text-align:center;
+    outline:none;
+}
+.success {
+    font-size:0.85em;
+    min-height:20px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    visibility:hidden;
+    transition:all 0.3s ease;
+}
 
-    .container {
-        background: rgba(255,255,255,0.05);
-        border-radius: 16px;
-        padding: 40px 30px;
-        width: 400px;
-        text-align: center;
-        box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-        backdrop-filter: blur(6px);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        min-height: 300px;
-    }
+/* --- Activity Log --- */
+.activity-log {
+    position: fixed;
+    top: 20px;
+    right: 15px;
+    width: 280px;
+    max-height: 85vh;
+    background: rgba(255,255,255,0.07);
+    border-radius: 12px;
+    padding: 4px 0 8px 0;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+    backdrop-filter: blur(6px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+.activity-log h2 {
+    position: sticky;
+    top:0;
+    background: rgba(15,23,42,0.95);
+    z-index:2;
+    margin:0;
+    padding:6px 0;
+    text-align:center;
+    font-weight:400;
+    font-size:1em;
+    letter-spacing:0.5px;
+    box-shadow:0 1px 3px rgba(0,0,0,0.2);
+}
+.activity-log .log-notice {
+    position: sticky;
+    top:28px;
+    background: rgba(15,23,42,0.95);
+    z-index:2;
+    margin:0;
+    padding:4px 6px;
+    text-align:center;
+    font-size:0.72em;
+    color:#facc15;
+    border-bottom:1px solid rgba(255,255,255,0.2);
+    line-height:1.3em;
+}
+.activity-log ul {
+    list-style:none;
+    margin:0;
+    padding:0 6px;
+    font-size:0.75em;
+}
+.activity-log li {
+    padding:4px 6px;
+    border-bottom:1px solid rgba(255,255,255,0.08);
+    opacity:0;
+    transform:translateY(4px);
+    transition:opacity 0.6s ease, transform 0.6s ease, background-color 0.3s ease;
+    word-break:break-word;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    font-weight:400;
+    font-size:0.72em;
+    border-radius:4px;
+}
+.activity-log li:hover {
+    background: rgba(255,255,255,0.06);
+}
+.activity-log li.show {
+    opacity:1;
+    transform:translateY(0);
+}
+.status-timein { color:#4ade80; font-weight:400; font-size:0.72em; }
+.status-timeout { color:#3b82f6; font-weight:400; font-size:0.72em; }
+.status-earlyout { color:#facc15; font-weight:400; font-size:0.72em; }
+.activity-log li.flash { animation: flashFade 1s forwards; }
+@keyframes flashFade {
+    0%{ background-color:orange;color:white; }
+    50%{ background-color:yellow;color:black; }
+    100%{ background-color:transparent;color:white; }
+}
 
-    .logo {
-        width: 200px;
-        height: 200px;
-        background-color: white;
-        border-radius: 12px;
-        padding: 8px;
-        object-fit: contain;
-        margin-bottom: 15px;
-    }
-    h1 {
-        font-size: 1.5em;
-        margin-bottom: 20px;
-        font-weight: 500;
-    }
-    .datetime {
-        font-size: 0.9em;
-        margin-bottom: 15px;
-        color: #a5b4fc;
-    }
-    input {
-        padding: 12px;
-        width: 100%;
-        border-radius: 8px;
-        border: none;
-        font-size: 1em;
-        margin-bottom: 15px;
-        text-align: center;
-        outline: none;
-    }
-    .success {
-        font-size: 0.9em;
-        min-height: 20px; 
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        visibility: hidden;
-        transition: all 0.3s ease;
-    }
+/* --- Footer --- */
+footer {
+    position:fixed;
+    bottom:15px;
+    left:0;
+    right:0;
+    text-align:center;
+}
+.powered {
+    display:inline-flex;
+    gap:6px;
+    align-items:center;
+    justify-content:center;
+    padding:5px 12px;
+    border-radius:999px;
+    font-size:0.75em;
+    color:white;
+    background:linear-gradient(90deg,#16a34a,#2563eb);
+    box-shadow:0 4px 12px rgba(0,0,0,0.35);
+    font-weight:400;
+}
 </style>
 </head>
 <body>
 
 <div class="container">
     <img src="https://i.imgur.com/6SF5KQG.png" class="logo" alt="Logo">
-    <h1>QR Attendance Scanner</h1>
+    <h1>Attendance and Payroll System</h1>
+    <div class="subtitle">Scan your QR to Register Attendance</div>
     <div class="datetime" id="datetime">--:-- --</div>
-
     <input type="text" id="qrInput" placeholder="Scan QR Code here..." autofocus>
-
     <div class="success" id="successMsg"></div>
 </div>
 
+<div class="activity-log">
+    <h2>Activity Logs</h2>
+    <div class="log-notice">⚠ Activity feed updates every 5 seconds.<br>Data not shown in real-time.</div>
+    <ul id="logList"></ul>
+</div>
+
+<footer>
+    <div class="powered">Powered by SIMPAL Group of Companies</div>
+</footer>
+
 <script>
-    // Real-time clock
-    function updateDateTime() {
-        const now = new Date();
-        const dateStr = now.toLocaleDateString();
-        const timeStr = now.toLocaleTimeString();
-        document.getElementById("datetime").innerText = `${dateStr} ${timeStr}`;
-    }
-    setInterval(updateDateTime, 1000);
-    updateDateTime();
+// --- Update Date & Time ---
+function updateDateTime() {
+    const now = new Date();
+    document.getElementById("datetime").innerText = `${now.toLocaleDateString()} ${now.toLocaleTimeString()}`;
+}
+setInterval(updateDateTime,1000);
+updateDateTime();
 
-    const qrInput = document.getElementById("qrInput");
-    const successMsg = document.getElementById("successMsg");
+// --- QR Scan Logic ---
+const qrInput = document.getElementById("qrInput");
+const successMsg = document.getElementById("successMsg");
+const scanCounts = {};
+const logList = document.getElementById("logList");
 
-    qrInput.focus(); 
+// restore logs from localStorage
+window.addEventListener("load", () => {
+    const savedLogs = JSON.parse(localStorage.getItem("activityLogs") || "[]");
+    renderLogsSequential(savedLogs);
+});
 
-    // Disable paste and manual typing
-    qrInput.addEventListener("paste", e => e.preventDefault());
-    
-    let scanTimer;
-    qrInput.addEventListener("input", function () {
-        clearTimeout(scanTimer);
+qrInput.focus();
+qrInput.addEventListener("paste",e=>e.preventDefault());
 
-        if (qrInput.value.trim() !== "") {
-            scanTimer = setTimeout(() => {
-                const scannedValue = qrInput.value.trim();
+qrInput.addEventListener("input",function(){
+    clearTimeout(window.scanTimer);
+    if(qrInput.value.trim()!==""){
+        window.scanTimer=setTimeout(()=>{
+            const scannedValue=qrInput.value.trim();
+            qrInput.value="";
+            qrInput.disabled=true; // 🔒 disable scanner
 
-                // Disable input while waiting for server feedback
-                qrInput.value = "";
-                qrInput.disabled = true;
+            let data;
+            try{
+                const parsed=JSON.parse(scannedValue);
+                data={id:parsed.ID||parsed.id,name:(parsed.NAME||parsed.name).toUpperCase(),area:parsed.AREA||parsed.area};
+            }catch(err){
+                showMsg("❌ Invalid QR format","#f87171");
+                return;
+            }
 
-                // Try parsing QR code JSON
-                let data;
-                try {
-                    const parsed = JSON.parse(scannedValue);
-                    data = {
-                        id: parsed.ID || parsed.id,
-                        name: parsed.NAME || parsed.name,
-                        area: parsed.AREA || parsed.area
-                    };
-                } catch (err) {
-                    successMsg.textContent = "❌ Invalid QR format";
-                    successMsg.style.color = "#f87171";
-                    successMsg.style.visibility = "visible";
+            const now=new Date();
+            const hour=now.getHours();
+            const minutes=now.getMinutes().toString().padStart(2,'0');
+            const ampm=hour>=12?'PM':'AM';
+            const timeStr=`${hour%12||12}:${minutes} ${ampm}`;
 
-                    setTimeout(() => {
-                        successMsg.style.visibility = "hidden";
-                        qrInput.disabled = false;
-                        qrInput.focus();
-                    }, 2000);
-                    return;
+            if(!scanCounts[data.id]) scanCounts[data.id]=0;
+            scanCounts[data.id]++;
+
+            let statusText="", statusClass="";
+            if(scanCounts[data.id]===1){
+                statusText="TIME IN"; statusClass="status-timein"; sendLog("Time In",data);
+            } else if(scanCounts[data.id]===2){
+                showMsg("⚠ Already Time In","#facc15");
+                return;
+            } else if(scanCounts[data.id]===3){
+                if(hour>=6 && hour<12){
+                    statusText="EARLY OUT"; statusClass="status-earlyout"; sendLog("Early Out",data);
+                } else if(hour>=12 && hour<=21){
+                    statusText="TIME OUT"; statusClass="status-timeout"; sendLog("Time Out",data);
                 }
+            } else {
+                showMsg("⚠ Already Time Out","#facc15");
+                return;
+            }
 
-                // Send parsed data to Google Apps Script
-                fetch("https://script.google.com/macros/s/AKfycbzxIw4N1eMDOvvyX_NqgBxW1NrzwSo-bvz6xn9Fw2nhmZPiXreP0RfZU9HsTK0Ezk0SlQ/exec", {
-                    method: "POST",
-                    body: new URLSearchParams({
-                        id: data.id,
-                        name: data.name,
-                        area: data.area
-                    })
-                })
-                .then(res => res.text())
-                .then(response => {
-                    console.log("Server Response:", response);
+            if(statusText){
+                const newLog={timeStr,name:data.name,statusText,statusClass};
+                appendLog(newLog,true);
+            }
 
-                    successMsg.textContent = response;
-                    successMsg.style.visibility = "visible";
+        },300);
+    }
+});
 
-                    // Color code feedback
-                    if (response.includes("✅")) {
-                        successMsg.style.color = "#4ade80"; // green
-                    } else if (response.includes("⚠")) {
-                        successMsg.style.color = "#facc15"; // yellow
-                    } else {
-                        successMsg.style.color = "#f87171"; // red
-                    }
+// --- Append Log + Save ---
+function appendLog(entry,save){
+    const li=document.createElement("li");
+    li.innerHTML=`<span>${entry.timeStr} - ${entry.name}</span> <span class="${entry.statusClass}">${entry.statusText}</span>`;
+    logList.appendChild(li);
+    setTimeout(()=>li.classList.add("show","flash"),50);
+    logList.scrollTop=logList.scrollHeight;
 
-                    // Re-enable input after 2 seconds
-                    setTimeout(() => {
-                        successMsg.style.visibility = "hidden";
-                        qrInput.disabled = false;
-                        qrInput.focus();
-                    }, 2000);
-                })
-                .catch(err => {
-                    console.error("Error:", err);
-                    successMsg.textContent = "❌ Network or server error";
-                    successMsg.style.color = "#f87171";
-                    successMsg.style.visibility = "visible";
+    if(save){
+        const logs=JSON.parse(localStorage.getItem("activityLogs")||"[]");
+        logs.push(entry);
+        localStorage.setItem("activityLogs",JSON.stringify(logs));
+    }
+}
 
-                    setTimeout(() => {
-                        successMsg.style.visibility = "hidden";
-                        qrInput.disabled = false;
-                        qrInput.focus();
-                    }, 2000);
-                });
-            }, 300);
-        }
+// --- Render logs one-by-one ---
+function renderLogsSequential(logs){
+    logList.innerHTML="";
+    logs.forEach((entry,i)=>{
+        setTimeout(()=>appendLog(entry,false),i*400);
     });
+}
+
+// --- Backend call ---
+function sendLog(type,data){
+    fetch("https://script.google.com/macros/s/AKfycbzxIw4N1eMDOvvyX_NqgBxW1NrzwSo-bvz6xn9Fw2nhmZPiXreP0RfZU9HsTK0Ezk0SlQ/exec",{
+        method:"POST",
+        body:new URLSearchParams({id:data.id,name:data.name,area:data.area,type:type})
+    })
+    .then(res=>res.text())
+    .then(response=>{
+        showMsg(response,
+            response.includes("✅")?"#4ade80":
+            response.includes("⚠")?"#facc15":"#f87171"
+        );
+    })
+    .catch(err=>showMsg("❌ Network or server error","#f87171"));
+}
+
+// --- Show message + reenable input ---
+function showMsg(text,color){
+    successMsg.textContent=text;
+    successMsg.style.color=color;
+    successMsg.style.visibility="visible";
+    setTimeout(()=>{
+        successMsg.style.visibility="hidden";
+        qrInput.disabled=false; // 🔓 enable scanner again
+        qrInput.focus();
+    },2000);
+}
 </script>
 
 </body>
