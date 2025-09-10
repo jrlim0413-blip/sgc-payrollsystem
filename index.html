@@ -116,7 +116,7 @@ input {
     color:#facc15;
     border-bottom:1px solid rgba(255,255,255,0.2);
     line-height:1.4em;
-    font-style: italic; /* ✅ italic para standout */
+    font-style: italic;
 }
 .activity-log ul {
     list-style:none;
@@ -198,16 +198,14 @@ footer {
     <ul id="logList"></ul>
 </div>
 
-
 <footer>
     <div class="powered">Powered by SIMPAL Group of Companies</div>
     <div id="location-info" 
      style="position: fixed; top: 15px; left: 10px; 
             font-size: 12px; color: #ccc; background: rgba(0,0,0,0.5);
             padding: 4px 8px; border-radius: 6px; z-index: 9999;">
-</div>
+    </div>
 </footer>
-<div id="location-info" style="font-size: 12px; color: #ccc; text-align: center; margin-top: 5px;"></div> 
 
 <script>
 // --- Date & Time ---
@@ -235,19 +233,16 @@ function loadLogs() {
   }
   return JSON.parse(localStorage.getItem("activityLogs") || "[]");
 }
-
 function saveLogs(logs) {
   localStorage.setItem("activityLogs", JSON.stringify(logs));
   localStorage.setItem("logsDate", new Date().toISOString().split("T")[0]);
 }
-
 function renderLogsSequential(logs) {
   logList.innerHTML = "";
   logs.forEach((entry, i) => {
     setTimeout(() => appendLog(entry, false), i * 400);
   });
 }
-
 let activityLogs = loadLogs();
 renderLogsSequential(activityLogs);
 
@@ -256,7 +251,7 @@ qrInput.addEventListener("paste", e => e.preventDefault());
 
 // --- Allowed Areas
 const allowedAreas = {
-  "ADMIN": { lat: 7.081165, lng: 125.599744, radius: 100 },
+  "ADMIN": { lat: 7.074611, lng: 125.603021, radius: 100 },
   "COTABATO": { lat: 7.217789, lng: 124.254901, radius: 100 },
   "AWANG": { lat: 7.17456, lng: 124.21840, radius: 100 }
 };
@@ -273,23 +268,51 @@ function getDistance(lat1, lon1, lat2, lon2) {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
+// --- Permanent Location (first-time only) ---
+function setFixedLocation(lat, lng) {
+  localStorage.setItem("fixedLat", lat);
+  localStorage.setItem("fixedLng", lng);
+  document.getElementById("location-info").innerText =
+    "📍 Current Location: " + lat + ", " + lng;
+}
+const savedLat = localStorage.getItem("fixedLat");
+const savedLng = localStorage.getItem("fixedLng");
+if (savedLat && savedLng) {
+  document.getElementById("location-info").innerText =
+    "📍 Current Location: " + savedLat + ", " + savedLng;
+  console.log("Using saved location:", savedLat, savedLng);
+} else {
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      const lat = pos.coords.latitude.toFixed(6);
+      const lng = pos.coords.longitude.toFixed(6);
+      setFixedLocation(lat, lng);
+      console.log("First-time location saved:", lat, lng);
+    },
+    (err) => {
+      document.getElementById("location-info").innerText =
+        "⚠ Unable to get location: " + err.message;
+    },
+    { enableHighAccuracy: true }
+  );
+}
+
+// --- Geofence Checker ---
 function checkGeofence(areaName) {
   return new Promise((resolve, reject) => {
-    if (!navigator.geolocation) {
-      reject("Geolocation not supported");
+    const area = allowedAreas[areaName.toUpperCase()];
+    if (!area) {
+      reject("Area not configured");
       return;
     }
-    navigator.geolocation.getCurrentPosition(pos => {
-      const userLat = pos.coords.latitude;
-      const userLng = pos.coords.longitude;
-      const area = allowedAreas[areaName.toUpperCase()];
-      if (!area) {
-        reject("Area not configured");
-        return;
-      }
-      const distance = getDistance(userLat, userLng, area.lat, area.lng);
-      resolve(distance <= area.radius);
-    }, () => reject("Location access denied"));
+    const lat = parseFloat(localStorage.getItem("fixedLat"));
+    const lng = parseFloat(localStorage.getItem("fixedLng"));
+    if (!lat || !lng) {
+      reject("Location not set");
+      return;
+    }
+    const distance = getDistance(lat, lng, area.lat, area.lng);
+    resolve(distance <= area.radius);
   });
 }
 
@@ -387,21 +410,6 @@ function sendLog(type, data) {
     })
     .catch(() => showMsg("❌ Network or server error", "#f87171"));
 }
-
-navigator.geolocation.getCurrentPosition(
-  (pos) => {
-    const lat = pos.coords.latitude.toFixed(6);
-    const lng = pos.coords.longitude.toFixed(6);
-    document.getElementById("location-info").innerText =
-      "📍 Current Location: " + lat + ", " + lng;
-    console.log("Current location:", lat, lng);
-  },
-  (err) => {
-    document.getElementById("location-info").innerText =
-      "⚠ Unable to get location: " + err.message;
-  },
-  { enableHighAccuracy: true }
-);
 
 // --- Show Message + Reset ---
 function showMsg(text, color, reenable = false) {
