@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SGC ATTENDANCE</title>
 <link rel="icon" type="image/png" href="https://i.imgur.com/6SF5KQG.png">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+
 <style>
 /* --- General Body & Container --- */
 body {
@@ -199,7 +201,10 @@ footer {
 </div>
 
 <footer>
-    <div class="powered">Powered by SIMPAL Group of Companies</div>
+    <div class="powered">
+  Developed by Jay Ryan Lim<br>
+  Powered by SIMPAL Group of Companies © 2025
+</div>
     <div id="location-info" 
      style="position: fixed; top: 15px; left: 10px; 
             font-size: 12px; color: #ccc; background: rgba(0,0,0,0.5);
@@ -215,7 +220,7 @@ function updateDateTime() {
     `${now.toLocaleDateString()} ${now.toLocaleTimeString()}`;
 }
 setInterval(updateDateTime, 1000);
-updateDateTime();
+updateDateTime();   
 
 const qrInput = document.getElementById("qrInput");
 const successMsg = document.getElementById("successMsg");
@@ -249,9 +254,9 @@ renderLogsSequential(activityLogs);
 // --- Disable paste
 qrInput.addEventListener("paste", e => e.preventDefault());
 
-// --- Allowed Areas
+// --- Allowed Areas   7.064746, 125.608843
 const allowedAreas = {
-  "ADMIN": { lat: 7.074611, lng: 125.603021, radius: 100 },
+  "ADMIN": { lat: 7.064746, lng: 125.608843, radius: 100 },
   "COTABATO": { lat: 7.217789, lng: 124.254901, radius: 100 },
   "AWANG": { lat: 7.17456, lng: 124.21840, radius: 100 }
 };
@@ -316,90 +321,20 @@ function checkGeofence(areaName) {
   });
 }
 
-// --- QR Input Handler ---
-qrInput.addEventListener("input", function () {
-  clearTimeout(window.scanTimer);
-  if (qrInput.value.trim() !== "") {
-    window.scanTimer = setTimeout(() => {
-      const scannedValue = qrInput.value.trim();
-      qrInput.value = "";
-      qrInput.disabled = true;
 
-      let data;
-      try {
-        const parsed = JSON.parse(scannedValue);
-        data = {
-          id: parsed.ID || parsed.id,
-          name: (parsed.NAME || parsed.name).toUpperCase(),
-          area: parsed.AREA || parsed.area
-        };
-      } catch {
-        return showMsg("❌ Invalid QR format", "#f87171", true);
-      }
-
-      const now = new Date();
-      const hour = now.getHours();
-      const minutes = now.getMinutes().toString().padStart(2, "0");
-      const ampm = hour >= 12 ? "PM" : "AM";
-      const timeStr = `${hour % 12 || 12}:${minutes} ${ampm}`;
-
-      if (!scanCounts[data.id]) scanCounts[data.id] = 0;
-      scanCounts[data.id]++;
-
-      let statusText = "", statusClass = "";
-
-      if (scanCounts[data.id] === 1) {
-        statusText = "TIME IN"; statusClass = "status-timein";
-      } else if (scanCounts[data.id] === 2) {
-        return showMsg("⚠ Already Time In", "#facc15", true);
-      } else if (scanCounts[data.id] === 3) {
-        if (hour >= 6 && hour < 12) {
-          statusText = "EARLY OUT"; statusClass = "status-earlyout";
-        } else if (hour >= 12 && hour <= 21) {
-          statusText = "TIME OUT"; statusClass = "status-timeout";
-        }
-      } else {
-        return showMsg("⚠ Already Time Out", "#facc15", true);
-      }
-
-      checkGeofence(data.area).then(isInside => {
-        if (!isInside) {
-          return showMsg("❌ Outside allowed area", "#f87171", true);
-        }
-        if (statusText) {
-          const newLog = { timeStr, name: data.name, statusText, statusClass };
-          appendLog(newLog, true);
-          sendLog(statusText, data);
-        }
-      }).catch(err => {
-        showMsg("⚠ " + err, "#facc15", true);
-      });
-
-    }, 300);
-  }
-});
-
-// --- Append Log ---
-function appendLog(entry, save) {
-  const li = document.createElement("li");
-  li.innerHTML =
-    `<span>${entry.timeStr} - ${entry.name}</span>
-     <span class="${entry.statusClass}">${entry.statusText}</span>`;
-  logList.appendChild(li);
-  setTimeout(() => li.classList.add("show", "flash"), 50);
-  logList.scrollTop = logList.scrollHeight;
-
-  if (save) {
-    activityLogs.push(entry);
-    saveLogs(activityLogs);
-  }
-}
+function _0x29d1(){const _0x2d3e7a=['172281LkfQDT','2620820IfmpWY','9uMBtLo','907725Qgebxx','282747BoaqIF','AREA','scrollHeight','disabled','#facc15','545304oVYEhd','NAME','4uivkus','enc','getMinutes','scrollTop','value','area','❌\x20Invalid\x20or\x20Encrypted\x20QR','show','#f87171','</span>','parse','⚠\x20Already\x20Time\x20Out','error','innerHTML','jayryan','startsWith','TIME\x20OUT','appendChild','timeStr','then','26346dhLjRu','toString','status-timeout','statusClass','Utf8','scanTimer','266UNejTh','addEventListener','name','</span>\x0a\x20\x20\x20\x20\x20<span\x20class=\x22','push','padStart','EARLY\x20OUT','\x20-\x20','435622ZryfUu','getHours','input','decrypt','AES','⚠\x20Already\x20Time\x20In'];_0x29d1=function(){return _0x2d3e7a;};return _0x29d1();}const _0x45067c=_0x3ef3;(function(_0x49f6de,_0x9f8241){const _0x50fb1c=_0x3ef3,_0x3df9b5=_0x49f6de();while(!![]){try{const _0x555091=-parseInt(_0x50fb1c(0x205))/0x1+parseInt(_0x50fb1c(0x1ff))/0x2+parseInt(_0x50fb1c(0x209))/0x3*(-parseInt(_0x50fb1c(0x210))/0x4)+-parseInt(_0x50fb1c(0x208))/0x5+parseInt(_0x50fb1c(0x1f1))/0x6*(parseInt(_0x50fb1c(0x1f7))/0x7)+-parseInt(_0x50fb1c(0x20e))/0x8+parseInt(_0x50fb1c(0x207))/0x9*(parseInt(_0x50fb1c(0x206))/0xa);if(_0x555091===_0x9f8241)break;else _0x3df9b5['push'](_0x3df9b5['shift']());}catch(_0x4af493){_0x3df9b5['push'](_0x3df9b5['shift']());}}}(_0x29d1,0x1fdd1),qrInput[_0x45067c(0x1f8)](_0x45067c(0x201),function(){const _0x8836b4=_0x45067c;clearTimeout(window[_0x8836b4(0x1f6)]),qrInput[_0x8836b4(0x214)]['trim']()!==''&&(window[_0x8836b4(0x1f6)]=setTimeout(()=>{const _0x16f204=_0x8836b4,_0x48e7ac=qrInput['value']['trim']();qrInput[_0x16f204(0x214)]='',qrInput[_0x16f204(0x20c)]=!![];let _0xff80fa;try{let _0x57ee5b;if(_0x48e7ac[_0x16f204(0x21f)]('U2Fsd')){const _0x1d9d18=CryptoJS[_0x16f204(0x203)][_0x16f204(0x202)](_0x48e7ac,_0x16f204(0x21e));_0x57ee5b=_0x1d9d18[_0x16f204(0x1f2)](CryptoJS[_0x16f204(0x211)][_0x16f204(0x1f5)]);}else _0x57ee5b=_0x48e7ac;const _0x44391c=JSON[_0x16f204(0x21a)](_0x57ee5b);_0xff80fa={'id':_0x44391c['ID']||_0x44391c['id'],'name':(_0x44391c[_0x16f204(0x20f)]||_0x44391c[_0x16f204(0x1f9)])['toUpperCase'](),'area':_0x44391c[_0x16f204(0x20a)]||_0x44391c[_0x16f204(0x215)]};}catch(_0x33a252){return console[_0x16f204(0x21c)]('QR\x20parse\x20error:',_0x33a252),showMsg(_0x16f204(0x216),_0x16f204(0x218),!![]);}const _0x2e6e40=new Date(),_0x2cb312=_0x2e6e40[_0x16f204(0x200)]()['toString']()[_0x16f204(0x1fc)](0x2,'0'),_0x337245=_0x2e6e40[_0x16f204(0x212)]()[_0x16f204(0x1f2)]()[_0x16f204(0x1fc)](0x2,'0'),_0x3113ea=_0x2cb312+':'+_0x337245;if(!scanCounts[_0xff80fa['id']])scanCounts[_0xff80fa['id']]=0x0;scanCounts[_0xff80fa['id']]++;let _0x5d7bb7='',_0x1ad955='';if(scanCounts[_0xff80fa['id']]===0x1)_0x5d7bb7='TIME\x20IN',_0x1ad955='status-timein';else{if(scanCounts[_0xff80fa['id']]===0x2)return showMsg(_0x16f204(0x204),_0x16f204(0x20d),!![]);else{if(scanCounts[_0xff80fa['id']]===0x3){if(_0x2cb312>=0x6&&_0x2cb312<0xc)_0x5d7bb7=_0x16f204(0x1fd),_0x1ad955='status-earlyout';else _0x2cb312>=0xc&&_0x2cb312<=0x15&&(_0x5d7bb7=_0x16f204(0x220),_0x1ad955=_0x16f204(0x1f3));}else return showMsg(_0x16f204(0x21b),_0x16f204(0x20d),!![]);}}checkGeofence(_0xff80fa[_0x16f204(0x215)])[_0x16f204(0x1f0)](_0x13d23f=>{const _0x53a679=_0x16f204;if(!_0x13d23f)return showMsg('❌\x20Outside\x20allowed\x20area',_0x53a679(0x218),!![]);if(_0x5d7bb7){const _0x369379={'timeStr':_0x3113ea,'name':_0xff80fa[_0x53a679(0x1f9)],'statusText':_0x5d7bb7,'statusClass':_0x1ad955};appendLog(_0x369379,!![]),sendLog(_0x5d7bb7,_0xff80fa);}})['catch'](_0x555043=>{const _0x31475b=_0x16f204;showMsg('⚠\x20'+_0x555043,_0x31475b(0x20d),!![]);});},0x12c));}));function _0x3ef3(_0x1b3091,_0x4d0b5e){const _0x29d199=_0x29d1();return _0x3ef3=function(_0x3ef3e5,_0xcbcb44){_0x3ef3e5=_0x3ef3e5-0x1f0;let _0x47e62b=_0x29d199[_0x3ef3e5];return _0x47e62b;},_0x3ef3(_0x1b3091,_0x4d0b5e);}function appendLog(_0x37c3f7,_0x48d2b9){const _0x111c58=_0x45067c,_0xef2c67=document['createElement']('li');_0xef2c67[_0x111c58(0x21d)]='<span>'+_0x37c3f7[_0x111c58(0x222)]+_0x111c58(0x1fe)+_0x37c3f7[_0x111c58(0x1f9)]+_0x111c58(0x1fa)+_0x37c3f7[_0x111c58(0x1f4)]+'\x22>'+_0x37c3f7['statusText']+_0x111c58(0x219),logList[_0x111c58(0x221)](_0xef2c67),setTimeout(()=>_0xef2c67['classList']['add'](_0x111c58(0x217),'flash'),0x32),logList[_0x111c58(0x213)]=logList[_0x111c58(0x20b)],_0x48d2b9&&(activityLogs[_0x111c58(0x1fb)](_0x37c3f7),saveLogs(activityLogs));}
 
 // --- Backend Call ---
 function sendLog(type, data) {
   fetch("https://script.google.com/macros/s/AKfycbzxIw4N1eMDOvvyX_NqgBxW1NrzwSo-bvz6xn9Fw2nhmZPiXreP0RfZU9HsTK0Ezk0SlQ/exec", {
     method: "POST",
-    body: new URLSearchParams({ id: data.id, name: data.name, area: data.area, type: type })
+    body: new URLSearchParams({
+      action: "attendance",   // ✅ REQUIRED by your backend
+      id: data.id,
+      name: data.name,
+      area: data.area,
+      type: type
+    })
   })
     .then(res => res.text())
     .then(response => {
