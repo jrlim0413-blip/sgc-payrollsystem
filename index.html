@@ -18,7 +18,14 @@ body {
     display:flex;
     justify-content:center;
     align-items:center;
+    overflow:hidden;
+    animation: fadeInBody 1.2s ease-in forwards;
 }
+@keyframes fadeInBody {
+    from { opacity:0; }
+    to { opacity:1; }
+}
+
 .container {
     background: rgba(255,255,255,0.05);
     border-radius:16px;
@@ -32,7 +39,15 @@ body {
     align-items:center;
     min-height:320px;
     z-index:1;
+    opacity:0;
+    transform:translateY(25px);
+    animation: fadeSlideUp 1.2s ease-out forwards;
 }
+@keyframes fadeSlideUp {
+    from { opacity:0; transform:translateY(25px); }
+    to { opacity:1; transform:translateY(0); }
+}
+
 .logo {
     width:180px;
     height:180px;
@@ -92,7 +107,15 @@ input {
     overflow-y: auto;
     overflow-x: hidden;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    opacity:0;
+    transform:translateX(25px);
+    animation: fadeSlideIn 1.3s ease-out 0.5s forwards;
 }
+@keyframes fadeSlideIn {
+    from { opacity:0; transform:translateX(25px); }
+    to { opacity:1; transform:translateX(0); }
+}
+
 .activity-log h2 {
     position: sticky;
     top:0;
@@ -140,21 +163,9 @@ input {
     font-size:0.72em;
     border-radius:4px;
 }
-.activity-log li:hover {
-    background: rgba(255,255,255,0.06);
-}
 .activity-log li.show {
     opacity:1;
     transform:translateY(0);
-}
-.status-timein { color:#4ade80; font-weight:400; font-size:0.72em; }
-.status-timeout { color:#3b82f6; font-weight:400; font-size:0.72em; }
-.status-earlyout { color:#facc15; font-weight:400; font-size:0.72em; }
-.activity-log li.flash { animation: flashFade 1s forwards; }
-@keyframes flashFade {
-    0%{ background-color:orange;color:white; }
-    50%{ background-color:yellow;color:black; }
-    100%{ background-color:transparent;color:white; }
 }
 
 /* --- Footer --- */
@@ -364,6 +375,7 @@ function showMsg(text, color, reenable = false) {
 
 </body>
 </html>
+
 
 
 
